@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Model weights / exports — tracked outside git (too large, and binary
+# diffs are useless). Drop your .pt files under models/<stage>/ locally.
+*.pt
+*.engine
+*.onnx
+*.h5
+
+# Media
+*.mp4
+*.avi
+*.mov
+*.jpg
+*.jpeg
+*.png
+
+# Runtime output
+logs/
+*.log
+detected_vehicle_images/
+
+# Env / secrets
+.env
+
+# Editor/OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

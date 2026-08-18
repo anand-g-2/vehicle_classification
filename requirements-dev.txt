@@ -1,0 +1,3 @@
+# Test tooling only. Runtime deps (ultralytics, torch, deep-sort-realtime, ...)
+# land in requirements.txt once more of the pipeline exists.
+pytest==9.1.1
