@@ -1,16 +1,13 @@
-# Requirements for vehicle_detection_template_v2_2.py
-# Environment: conda env "vehicle_cls" (Python 3.11.15)
+# vehicle_classification — runtime requirements
+# Environment : conda env "vehicle_cls" (Python 3.11)
+# GPU         : NVIDIA GeForce GTX 1650 (SM 7.5, 4 GB VRAM) — same as cv_pipeline's
 
-opencv-python==4.10.0.84
-numpy==1.26.4
-ultralytics==8.4.84
-torch==2.6.0+cu124
-torchvision==0.21.0+cu124
 --extra-index-url https://download.pytorch.org/whl/cu124
 
-# tracking
-boxmot==19.0.0                 # ByteTrack / BotSort / StrongSort unified API
-                               # (10.0.112 never existed; 10.0.84 is latest 10.x)
-lapx==0.9.4                    # Drop-in lap replacement with Windows wheels
-setuptools==75.6.0             # Pinned — keeps pkg_resources for legacy build deps
-scipy==1.14.1                  # Kalman filter, distance metrics (used by BotSort)
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+
+ultralytics==8.4.84
+opencv-python==4.10.0.84
+numpy==1.26.4
+structlog==25.4.0
