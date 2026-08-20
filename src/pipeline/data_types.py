@@ -4,6 +4,7 @@ Adding new fields is backward compatible; removing is a breaking change.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 # Detection contract
@@ -43,3 +44,20 @@ class TrackedObject:
     age: int = 0                # frames since first detection
     hits: int = 0                # total confirmed detections
     frames_missing: int = 0      # consecutive frames without detection
+
+# Calibration / classification contract
+
+@dataclass
+class LaneLine:
+    """A calibration line drawn across a lane, used both to detect a
+    vehicle crossing it and as the size reference for SV/MV/HV
+    classification (a vehicle's on-screen size relative to this line's
+    length)."""
+    start: tuple[int, int]
+    end: tuple[int, int]
+    is_curved: bool = False   # widens the crossing tolerance for an angled lane
+
+    @property
+    def length(self) -> float:
+        (x1, y1), (x2, y2) = self.start, self.end
+        return math.hypot(x2 - x1, y2 - y1)
