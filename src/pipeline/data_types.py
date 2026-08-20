@@ -33,3 +33,13 @@ class BoundingBox:
     @property
     def center(self) -> tuple[float, float]:
         return ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
+
+# Tracking contract
+
+@dataclass
+class TrackedObject:
+    track_id: int
+    bbox: BoundingBox
+    age: int = 0                # frames since first detection
+    hits: int = 0                # total confirmed detections
+    frames_missing: int = 0      # consecutive frames without detection

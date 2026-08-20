@@ -11,3 +11,7 @@ ultralytics==8.4.84
 opencv-python==4.10.0.84
 numpy==1.26.4
 structlog==25.4.0
+
+# Tracking 
+boxmot==19.0.0
+lapx
