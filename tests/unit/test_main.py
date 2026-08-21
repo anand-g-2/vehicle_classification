@@ -10,6 +10,8 @@ from main import DEFAULT_MODEL, DEFAULT_VIDEO, parse_args
 
 
 def test_defaults():
+    """Tests that the default values are set correctly 
+    when no command-line arguments are provided."""
     args = parse_args([])
 
     assert args.video == str(DEFAULT_VIDEO)
@@ -21,6 +23,7 @@ def test_defaults():
 
 
 def test_overrides():
+    """Tests that command-line overrides are parsed correctly."""
     args = parse_args([
         "--video", "clip.mp4",
         "--model", "weights/custom.pt",
@@ -39,5 +42,6 @@ def test_overrides():
 
 
 def test_invalid_tracker_choice_rejected():
+    """Tests that an invalid tracker choice raises a SystemExit (argparse error)."""
     with pytest.raises(SystemExit):
         parse_args(["--tracker", "NotARealTracker"])

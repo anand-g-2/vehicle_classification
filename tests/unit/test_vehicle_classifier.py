@@ -29,6 +29,8 @@ def _tracked(track_id, bbox) -> TrackedObject:
 # ---- check_line_intersection ----
 
 def test_intersection_true_when_overlapping_and_within_y_tolerance():
+    """Tests that check_line_intersection returns True and the correct percentage
+    when a bounding box overlaps a lane line in both x and y (within tolerance)."""
     line = LaneLine(start=(0, 300), end=(200, 300))
     bbox = _bbox(50, 280, 170, 320)  # x-overlap [50,170] = 120 / 200 span = 60%
 
@@ -39,6 +41,8 @@ def test_intersection_true_when_overlapping_and_within_y_tolerance():
 
 
 def test_intersection_false_when_no_x_overlap():
+    """Tests that check_line_intersection returns False and 0.0 percentage
+    when a bounding box does not overlap a lane line in the x dimension."""
     line = LaneLine(start=(0, 300), end=(200, 300))
     bbox = _bbox(250, 280, 350, 320)  # entirely to the right of the line
 
@@ -49,6 +53,8 @@ def test_intersection_false_when_no_x_overlap():
 
 
 def test_intersection_false_when_y_outside_tolerance():
+    """Tests that check_line_intersection returns False and 0.0 percentage
+    when a bounding box overlaps a lane line in x but is outside the y tolerance."""
     line = LaneLine(start=(0, 300), end=(200, 300))
     bbox = _bbox(50, 320, 150, 340)  # x overlaps, but y range [320,340] misses y=300 by >5
 
@@ -58,6 +64,8 @@ def test_intersection_false_when_y_outside_tolerance():
 
 
 def test_curved_line_widens_y_tolerance():
+    """Tests that a curved LaneLine increases the y-tolerance for intersection checks,
+    allowing a bounding box that would otherwise miss to be considered crossing."""
     straight = LaneLine(start=(0, 300), end=(200, 300), is_curved=False)
     curved = LaneLine(start=(0, 300), end=(200, 300), is_curved=True)
     bbox = _bbox(50, 320, 150, 340)  # misses tol=5, but within tol=20
@@ -70,6 +78,8 @@ def test_curved_line_widens_y_tolerance():
 
 
 def test_intersection_zero_length_line_does_not_crash():
+    """Tests that check_line_intersection handles a zero-length line gracefully, 
+    returning False and 0.0 percentage."""
     vertical_line = LaneLine(start=(50, 0), end=(50, 300))  # x1 == x2
     bbox = _bbox(0, 0, 100, 300)
 
@@ -81,35 +91,42 @@ def test_intersection_zero_length_line_does_not_crash():
 
 # ---- classify_by_dimensions ----
 
-def test_classify_wide_and_tall_is_hv():
+def test_classify_tall_and_wide_is_hv():
+    """Tests that a bounding box that is both tall and wide is classified as HV."""
     line = LaneLine(start=(0, 0), end=(100, 0))  # length 100
-    bbox = _bbox(0, 0, 90, 90)  # width=90 (>80), height=90 (>=80)
+    bbox = _bbox(0, 0, 90, 90)  # height=90 (>80), width=90 (>=80)
     assert classify_by_dimensions(bbox, line) == HV
 
 
-def test_classify_wide_but_short_is_mv():
+def test_classify_tall_but_narrow_is_mv():
+    """Tests that a bounding box that is tall but not wide is classified as MV."""
     line = LaneLine(start=(0, 0), end=(100, 0))
-    bbox = _bbox(0, 0, 90, 50)  # width=90 (>80), height=50 (<80)
+    bbox = _bbox(0, 0, 50, 90)  # height=90 (>80), width=50 (<80)
     assert classify_by_dimensions(bbox, line) == MV
 
 
-def test_classify_narrow_is_sv():
+def test_classify_short_is_sv():
+    """Tests that a bounding box that is short is classified as SV."""
     line = LaneLine(start=(0, 0), end=(100, 0))
-    bbox = _bbox(0, 0, 70, 90)  # width=70 (<=80) — SV regardless of height
+    bbox = _bbox(0, 0, 90, 70)  # height=70 (<=80) — SV regardless of width
     assert classify_by_dimensions(bbox, line) == SV
 
 
-def test_classify_width_exactly_at_threshold_is_sv():
-    # original check is strict `>`, so exactly 0.8 * line.length doesn't qualify
+def test_classify_height_exactly_at_threshold_is_sv():
+    """Tests that a bounding box with height exactly at the threshold is classified as SV,
+    since the height check uses a strict greater-than comparison."""
+    # outer check is strict `>`, so exactly 0.8 * line.length doesn't qualify
     line = LaneLine(start=(0, 0), end=(100, 0))
-    bbox = _bbox(0, 0, 80, 90)  # width == 80 exactly
+    bbox = _bbox(0, 0, 90, 80)  # height == 80 exactly
     assert classify_by_dimensions(bbox, line) == SV
 
 
-def test_classify_height_exactly_at_threshold_is_hv():
+def test_classify_width_exactly_at_threshold_is_hv():
+    """Tests that a bounding box with width exactly at the threshold is classified as HV,
+    since the width check uses a inclusive greater-than-or-equal comparison."""
     # inner check is `>=`, so exactly 0.8 * line.length does qualify
     line = LaneLine(start=(0, 0), end=(100, 0))
-    bbox = _bbox(0, 0, 90, 80)  # width=90 (>80), height==80 exactly
+    bbox = _bbox(0, 0, 80, 90)  # height=90 (>80), width==80 exactly
     assert classify_by_dimensions(bbox, line) == HV
 
 
@@ -121,6 +138,8 @@ def _single_line_classifier(threshold=50.0) -> VehicleClassifier:
 
 
 def test_update_classifies_crossing_track():
+    """Tests that VehicleClassifier.update() classifies a track that 
+    crosses a line by more than the intersection threshold, and returns the classification."""
     clf = _single_line_classifier()
     bbox = _bbox(50, 280, 170, 320)  # 60% crossing — enough to trigger classification
 
@@ -132,6 +151,8 @@ def test_update_classifies_crossing_track():
 
 
 def test_update_does_not_reclassify_existing_track():
+    """Tests that VehicleClassifier.update() does not reclassify a track 
+    that has already been classified, even if the track crosses the line again."""
     clf = _single_line_classifier()
     bbox = _bbox(50, 280, 170, 320)
 
@@ -144,6 +165,8 @@ def test_update_does_not_reclassify_existing_track():
 
 
 def test_update_ignores_track_that_never_crosses():
+    """Tests that VehicleClassifier.update() ignores a track 
+    that never crosses a line by more than the intersection threshold."""
     clf = _single_line_classifier()
     bbox = _bbox(250, 280, 350, 320)  # no x-overlap with the line at all
 
@@ -155,6 +178,8 @@ def test_update_ignores_track_that_never_crosses():
 
 
 def test_update_respects_intersection_threshold():
+    """Tests that VehicleClassifier.update() respects the intersection_threshold parameter, 
+    classifying a track only if it crosses a line by more than the specified percentage."""
     # 60% crossing passes a 50 threshold but not a 70 threshold
     bbox = _bbox(50, 280, 170, 320)
     lenient = _single_line_classifier(threshold=50.0)
@@ -165,6 +190,8 @@ def test_update_respects_intersection_threshold():
 
 
 def test_update_uses_first_matching_line_in_order():
+    """Tests that VehicleClassifier.update() uses the first line in the list 
+    that a track crosses, even if multiple lines would match."""
     line_a = LaneLine(start=(0, 300), end=(200, 300))
     line_b = LaneLine(start=(0, 300), end=(200, 300))  # identical — both would match
     clf = VehicleClassifier(lines=[line_a, line_b], intersection_threshold=50.0)
@@ -177,6 +204,8 @@ def test_update_uses_first_matching_line_in_order():
 
 
 def test_reset_clears_classifications_and_counts():
+    """Tests that VehicleClassifier.reset() clears all classifications and counts,
+    allowing the classifier to start fresh."""
     clf = _single_line_classifier()
     bbox = _bbox(50, 280, 170, 320)
     clf.update([_tracked(1, bbox)])

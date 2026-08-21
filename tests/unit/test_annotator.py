@@ -25,6 +25,7 @@ def _tracked(track_id, x1, y1, x2, y2) -> TrackedObject:
 # ---- draw_lines ----
 
 def test_draw_lines_paints_line_pixels():
+    """Test that draw_lines paints the pixels of a line."""
     frame = _blank_frame()
     line = LaneLine(start=(10, 50), end=(190, 50))
 
@@ -35,6 +36,7 @@ def test_draw_lines_paints_line_pixels():
 
 
 def test_draw_lines_is_in_place():
+    """Test that draw_lines modifies the passed-in frame, rather than returning a copy."""
     frame = _blank_frame()
     line = LaneLine(start=(10, 50), end=(190, 50))
 
@@ -47,6 +49,7 @@ def test_draw_lines_is_in_place():
 # ---- draw_tracked_object ----
 
 def test_draw_tracked_object_paints_box_border_not_interior():
+    """Test that draw_tracked_object paints the box border but not the interior."""
     frame = _blank_frame()
     tracked = _tracked(1, 20, 20, 80, 80)
 
@@ -57,6 +60,7 @@ def test_draw_tracked_object_paints_box_border_not_interior():
 
 
 def test_draw_tracked_object_nonempty_label_adds_visible_text():
+    """Test that draw_tracked_object paints the label text when it's non-empty."""
     box_only = _blank_frame()
     with_label = _blank_frame()
     tracked = _tracked(1, 20, 20, 80, 80)
@@ -70,6 +74,8 @@ def test_draw_tracked_object_nonempty_label_adds_visible_text():
 # ---- draw_counts ----
 
 def test_draw_counts_paints_near_position_and_leaves_rest_untouched():
+    """Test that draw_counts paints the text near the given position, 
+    and leaves the rest of the frame untouched."""
     frame = _blank_frame()
 
     draw_counts(frame, {"SV": 1, "MV": 2, "HV": 3}, position=(10, 20))
@@ -81,6 +87,8 @@ def test_draw_counts_paints_near_position_and_leaves_rest_untouched():
 # ---- annotate_frame ----
 
 def test_annotate_frame_does_not_mutate_input():
+    """Test that annotate_frame does not mutate the input frame, 
+    but returns a new annotated copy."""
     frame = _blank_frame()
     original = frame.copy()
     line = LaneLine(start=(10, 50), end=(190, 50))
@@ -92,6 +100,7 @@ def test_annotate_frame_does_not_mutate_input():
 
 
 def test_annotate_frame_returns_annotated_copy():
+    """Test that annotate_frame returns a new annotated copy of the frame."""
     frame = _blank_frame()
     line = LaneLine(start=(10, 50), end=(190, 50))
     tracked = _tracked(1, 20, 20, 80, 80)
@@ -103,6 +112,8 @@ def test_annotate_frame_returns_annotated_copy():
 
 
 def test_annotate_frame_draws_unclassified_tracks_with_no_label_text():
+    """Test that annotate_frame draws the box for a not-yet-classified track,
+    but without any label text."""
     frame = _blank_frame()
     tracked = _tracked(1, 20, 20, 80, 80)
 

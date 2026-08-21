@@ -50,17 +50,22 @@ def _make_tracker(update_side_effect) -> VehicleTracker:
 
 
 def test_unknown_tracker_class_raises():
+    """Tests that passing an unknown tracker class to VehicleTracker raises a ValueError."""
     with pytest.raises(ValueError):
         VehicleTracker(tracker_class="NotARealTracker")
 
 
 def test_update_returns_empty_list_when_no_tracks():
+    """Tests that VehicleTracker.update() returns an empty list 
+    when the underlying tracker returns no tracks, even if detections were passed in."""
     tracker = _make_tracker(update_side_effect=[_fake_raw_tracks([])])
     result = tracker.update(FRAME, [_detection(0, 0, 50, 50)])
     assert result == []
 
 
 def test_update_returns_tracked_object_with_correct_fields():
+    """Tests that VehicleTracker.update() returns a TrackedObject with the correct fields
+    when the underlying tracker returns a single track."""
     raw = _fake_raw_tracks([(10, 20, 110, 220, 1, 0.87, 2)])  # car
     tracker = _make_tracker(update_side_effect=[raw])
 
@@ -79,6 +84,8 @@ def test_update_returns_tracked_object_with_correct_fields():
 
 
 def test_track_state_accumulates_across_frames():
+    """Tests that a track's age and hits accumulate across multiple frames
+    when the same track is matched repeatedly."""
     raw = _fake_raw_tracks([(0, 0, 50, 50, 1, 0.9, 2)])
     tracker = _make_tracker(update_side_effect=[raw, raw, raw])
 
@@ -92,6 +99,8 @@ def test_track_state_accumulates_across_frames():
 
 
 def test_missing_track_increments_frames_missing_and_is_not_returned():
+    """Tests that a track that is not matched in a frame increments 
+    its frames_missing counter and is not returned in the list of active tracks."""
     seen = _fake_raw_tracks([(0, 0, 50, 50, 1, 0.9, 2)])
     empty = _fake_raw_tracks([])
     tracker = _make_tracker(update_side_effect=[seen, empty])
@@ -104,6 +113,9 @@ def test_missing_track_increments_frames_missing_and_is_not_returned():
 
 
 def test_track_reappearing_resumes_state():
+    """Tests that a track that disappears for a frame and then reappears 
+    resumes its age/hits and resets frames_missing 
+    (i.e. the state is preserved across frames where the track is not seen)."""
     seen = _fake_raw_tracks([(0, 0, 50, 50, 1, 0.9, 2)])
     empty = _fake_raw_tracks([])
     tracker = _make_tracker(update_side_effect=[seen, empty, seen])
@@ -118,6 +130,10 @@ def test_track_reappearing_resumes_state():
 
 
 def test_unknown_class_id_falls_back_to_string_label():
+    """Tests that a detection with a class_id not in target_classes 
+    falls back to using the class_id as a string for the class_name in the 
+    returned TrackedObject. This ensures that the tracker can handle 
+    unexpected class IDs gracefully."""
     raw = _fake_raw_tracks([(0, 0, 50, 50, 1, 0.9, 999)])  # not in target_classes
     tracker = _make_tracker(update_side_effect=[raw])
 
@@ -127,6 +143,8 @@ def test_unknown_class_id_falls_back_to_string_label():
 
 
 def test_multiple_tracks_sorted_by_track_id():
+    """Tests that when multiple tracks are returned, 
+    they are sorted by track_id in the result."""
     raw = _fake_raw_tracks([
         (100, 100, 150, 150, 5, 0.8, 5),
         (0, 0, 50, 50, 1, 0.9, 2),
@@ -139,6 +157,8 @@ def test_multiple_tracks_sorted_by_track_id():
 
 
 def test_reset_clears_track_state():
+    """Tests that VehicleTracker.reset() clears all track state, 
+    including active tracks and their statistics."""
     raw = _fake_raw_tracks([(0, 0, 50, 50, 1, 0.9, 2)])
     tracker = _make_tracker(update_side_effect=[raw])
     tracker.update(FRAME, [_detection(0, 0, 50, 50)])
@@ -151,6 +171,7 @@ def test_reset_clears_track_state():
 # ---- _translate_kwargs / _filter_accepted_kwargs ----
 
 def test_translate_kwargs_bytetrack_is_identity():
+    """Tests that _translate_kwargs returns the input unchanged for ByteTrack."""
     # ByteTrack IS the canonical vocabulary — its alias table is empty.
     raw = {"track_thresh": 0.5, "min_conf": 0.1}
     assert _translate_kwargs("ByteTrack", raw) == raw
@@ -163,6 +184,7 @@ def test_translate_kwargs_botsort_renames_known_params():
 
 
 def test_translate_kwargs_leaves_unaliased_params_untouched():
+    """Tests that _translate_kwargs leaves unaliased parameters untouched."""
     # frame_rate isn't in any tracker's alias table — passes through as-is.
     raw = {"track_thresh": 0.5, "frame_rate": 30}
     translated = _translate_kwargs("BotSort", raw)
@@ -171,6 +193,8 @@ def test_translate_kwargs_leaves_unaliased_params_untouched():
 
 
 def test_filter_accepted_kwargs_passes_everything_when_target_has_kwargs():
+    """Tests that _filter_accepted_kwargs passes all kwargs through 
+    when the target class has a **kwargs catch-all."""
     class _HasCatchAll:
         def __init__(self, known=1, **kwargs):
             pass
@@ -181,6 +205,8 @@ def test_filter_accepted_kwargs_passes_everything_when_target_has_kwargs():
 
 
 def test_filter_accepted_kwargs_drops_unrecognised_params_without_catch_all():
+    """Tests that _filter_accepted_kwargs drops unrecognised kwargs 
+    when the target class does not have a **kwargs catch-all."""
     class _NoCatchAll:
         def __init__(self, known=1):
             pass
@@ -191,6 +217,8 @@ def test_filter_accepted_kwargs_drops_unrecognised_params_without_catch_all():
 
 
 def test_vehicle_tracker_passes_translated_kwargs_to_constructor():
+    """Tests that VehicleTracker translates canonical kwargs
+      to the native tracker's expected names and passes them to the constructor."""
     # A real (non-mock) class, so _filter_accepted_kwargs introspects an
     # actual signature rather than guessing at MagicMock's dunder behaviour.
     captured: dict = {}

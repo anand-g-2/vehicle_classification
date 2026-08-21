@@ -67,6 +67,10 @@ def detector():
 
 
 def test_process_video_runs_and_writes_output(short_clip_path, detector, tmp_path):
+    """Smoke test that process_video() runs end-to-end on a short real clip,
+    with real detector, tracker, and classifier, and writes a non-empty output file.
+    Also checks that the returned counts dict has the expected keys and non-negative values.
+    """
     clip_path, (width, height) = short_clip_path
     lines = [LaneLine(start=(0, height // 2), end=(width, height // 2))]
     tracker = VehicleTracker(tracker_class="ByteTrack")
@@ -92,6 +96,7 @@ def test_process_video_runs_and_writes_output(short_clip_path, detector, tmp_pat
 
 
 def test_process_video_raises_on_missing_video(detector, tmp_path):
+    """Tests that process_video() raises FileNotFoundError when the input video path does not exist."""
     tracker = VehicleTracker(tracker_class="ByteTrack")
     classifier = VehicleClassifier(lines=[])
 
