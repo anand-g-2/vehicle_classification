@@ -5,14 +5,6 @@ Ports the SV/MV/HV classification logic from vehicle_detection_template_v2_3.py:
 a vehicle is classified once, the first time its tracked bbox crosses a
 calibrated LaneLine by more than `intersection_threshold` percent, using
 its on-screen size relative to that line's length.
-
-One deliberate fix vs. the original: v2_3.py unpacks
-`w, h, c = cropped_img.shape`, which actually assigns bbox HEIGHT to `w`
-and bbox WIDTH to `h` (numpy shape is rows-then-columns), so the "width"
-check that ran was really a height check. This port compares actual
-width first, matching the naming intent used everywhere else in that
-codebase (the dead obj_label() helper compares obj_width to line_width
-directly, with no height check at all).
 """
 from __future__ import annotations
 
@@ -61,7 +53,7 @@ def check_line_intersection(line: LaneLine, bbox: BoundingBox) -> tuple[bool, fl
 def classify_by_dimensions(bbox: BoundingBox, line: LaneLine) -> str:
     """
     SV / MV / HV from a vehicle's on-screen size relative to the
-    crossing line's length. Width is checked first, then height.
+    crossing line's length. Height is checked first, then width.
     """
     if bbox.height > 0.8 * line.length:
         if bbox.width >= 0.8 * line.length:
