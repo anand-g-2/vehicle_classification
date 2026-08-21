@@ -46,6 +46,9 @@ def detector():
 
 
 def test_detect_runs_on_a_real_frame(first_frame, detector):
+    """Smoke test that VehicleDetector.detect() runs on a real frame with real weights,
+    and returns at least one detection. This is the actual point of detection,
+    not just "did it run without crashing"."""
     results = detector.detect(first_frame)
 
     # road_traffic.mp4's first frame is a live traffic scene — assert
@@ -54,6 +57,10 @@ def test_detect_runs_on_a_real_frame(first_frame, detector):
 
 
 def test_detections_are_well_formed(first_frame, detector):
+    """Smoke test that VehicleDetector.detect() returns BoundingBox instances
+    with well-formed fields (valid class_name, confidence, bbox coordinates)
+    across several frames of a real video. This is a sanity check that the
+    detector is returning valid data, not just that it doesn't crash."""
     frame_h, frame_w = first_frame.shape[:2]
     results = detector.detect(first_frame)
 

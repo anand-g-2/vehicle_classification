@@ -53,6 +53,10 @@ def detector():
 
 
 def test_tracks_are_confirmed_and_persist_across_frames(frames, detector):
+    """Smoke test that VehicleTracker confirms at least one track across
+    several frames, and that at least one track ID persists across consecutive
+    frames. This is the actual point of tracking, not just "did detection
+    find something."""
     tracker = VehicleTracker(tracker_class="ByteTrack")
 
     track_ids_per_frame: list[set[int]] = []
@@ -75,6 +79,10 @@ def test_tracks_are_confirmed_and_persist_across_frames(frames, detector):
 
 
 def test_tracked_objects_are_well_formed(frames, detector):
+    """Smoke test that VehicleTracker returns TrackedObjects with well-formed fields
+    (valid track_id, class_name, bbox coordinates, hits, frames_missing) across
+    several frames of a real video. This is a sanity check that the tracker is
+    returning valid data, not just that it doesn't crash."""
     tracker = VehicleTracker(tracker_class="ByteTrack")
     frame_h, frame_w = frames[0].shape[:2]
 
